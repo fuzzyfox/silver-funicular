@@ -59,6 +59,14 @@
       "title": "GitHub Organization",
       "description": "Your GitHub organization name for Copilot metrics",
       "placeholder": "my-org"
+    },
+    {
+      "name": "googleApiKey",
+      "type": "password",
+      "required": false,
+      "title": "Google API Key",
+      "description": "Google AI Studio API key for Gemini usage tracking",
+      "placeholder": "AIza..."
     }
   ],
   "dependencies": {

@@ -17,11 +17,11 @@ Track usage and limits across multiple AI agents directly from Raycast. Monitor 
 - **Claude Code** - Track Anthropic Claude API usage via token consumption
 - **JetBrains Junie** - Track JetBrains AI Assistant usage via IDE Services API
 - **GitHub Copilot** - Track GitHub Copilot seat usage and code acceptance rates
+- **Google Gemini** - Track Google Gemini API rate limits and quota tier
 
 ### Coming Soon
 
 - OpenAI GPT models
-- Google PaLM/Gemini
 - Cohere
 - And more...
 
@@ -57,6 +57,7 @@ convert assets/icon.svg -resize 512x512 assets/icon.png
 convert assets/claude-logo.svg -resize 64x64 assets/claude-logo.png
 convert assets/junie-logo.svg -resize 64x64 assets/junie-logo.png
 convert assets/copilot-logo.svg -resize 64x64 assets/copilot-logo.png
+convert assets/gemini-logo.svg -resize 64x64 assets/gemini-logo.png
 ```
 
 Alternatively, download official logos:
@@ -64,6 +65,7 @@ Alternatively, download official logos:
 - Claude: Get from [Anthropic Brand Assets](https://www.anthropic.com/brand)
 - JetBrains Junie: Get from [JetBrains Brand Assets](https://www.jetbrains.com/company/brand/)
 - GitHub Copilot: Get from [GitHub Logos](https://github.com/logos)
+- Google Gemini: Get from [Google Brand Assets](https://about.google/brand-resource-center/)
 
 4. Build the extension:
 
@@ -186,6 +188,48 @@ The extension uses the GitHub Copilot Metrics API to track seat usage and code a
 - [Copilot Usage Metrics Guide](https://docs.github.com/en/copilot/concepts/copilot-metrics)
 - [Interpreting Copilot Metrics](https://docs.github.com/en/copilot/reference/copilot-usage-metrics/interpret-copilot-metrics)
 
+### Google Gemini API
+
+The extension uses the Google Gemini API to check rate limits and quota tiers. You'll need:
+
+- A Google AI Studio API key
+- Access to the Gemini API
+
+**API Endpoints Used:**
+
+- `GET /v1beta/models` - Lightweight endpoint to check API access and rate limits
+
+**Authentication:**
+
+- API key authentication (add key as query parameter)
+- Create keys at: [Google AI Studio](https://aistudio.google.com/app/apikey)
+
+**Metrics Tracked:**
+
+- Requests per minute (RPM) usage from rate limit headers
+- Quota tier detection (Free, Paid)
+- Primary model information (gemini-1.5-pro, gemini-1.5-flash, etc.)
+
+**Rate Limits:**
+
+- **Free Tier**: 5-15 RPM depending on model, 1,500 RPD (requests per day)
+- **Paid Tier**: Higher limits based on subscription
+- Rate limits are per project, not per API key
+- RPD quotas reset at midnight Pacific time
+
+**Important Notes:**
+
+- Google doesn't provide a direct usage tracking API endpoint
+- Full usage tracking requires Google Cloud Monitoring API with service accounts
+- This implementation checks rate limit headers for real-time quota information
+- View detailed usage in Google AI Studio under "Usage and Billing"
+
+**Learn More:**
+
+- [Gemini API Rate Limits](https://ai.google.dev/gemini-api/docs/rate-limits)
+- [Using Gemini API Keys](https://ai.google.dev/gemini-api/docs/api-key)
+- [Google AI Studio](https://aistudio.google.com/)
+
 ## Development
 
 ### Project Structure
@@ -197,7 +241,8 @@ silver-funicular/
 │   ├── clients/      # API clients for each agent
 │   │   ├── claude.ts
 │   │   ├── jetbrains.ts
-│   │   └── copilot.ts
+│   │   ├── copilot.ts
+│   │   └── google-gemini.ts
 │   ├── types.ts      # TypeScript type definitions
 │   └── view-usage.tsx # Main UI component
 ├── package.json

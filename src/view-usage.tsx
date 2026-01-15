@@ -4,6 +4,7 @@ import React from "react";
 import { getClaudeUsage, formatTokenCount } from "./clients/claude";
 import { getJetBrainsUsage } from "./clients/jetbrains";
 import { getCopilotUsage } from "./clients/copilot";
+import { getGoogleGeminiUsage } from "./clients/google-gemini";
 import { AgentUsage } from "./types";
 
 interface Preferences {
@@ -12,6 +13,7 @@ interface Preferences {
   jetbrainsServerUrl?: string;
   githubToken?: string;
   githubOrg?: string;
+  googleApiKey?: string;
 }
 
 export default function Command() {
@@ -39,12 +41,23 @@ export default function Command() {
       results.push(copilotUsage);
     }
 
-    // Future: Add more agents here (OpenAI, Google Gemini, etc.)
+    // Fetch Google Gemini usage if API key is configured
+    if (preferences.googleApiKey) {
+      const geminiUsage = await getGoogleGeminiUsage();
+      results.push(geminiUsage);
+    }
+
+    // Future: Add more agents here (OpenAI, etc.)
 
     return results;
   }
 
-  if (!preferences.anthropicApiKey && !preferences.jetbrainsApiToken && !preferences.githubToken) {
+  if (
+    !preferences.anthropicApiKey &&
+    !preferences.jetbrainsApiToken &&
+    !preferences.githubToken &&
+    !preferences.googleApiKey
+  ) {
     return (
       <Detail
         markdown="# No API Keys Configured
@@ -55,6 +68,7 @@ Please configure at least one API key in the extension preferences to track agen
 - **Claude Code** - Requires Anthropic API Key
 - **JetBrains Junie** - Requires JetBrains IDE Services Automation Token
 - **GitHub Copilot** - Requires GitHub Personal Access Token and Organization name
+- **Google Gemini** - Requires Google AI Studio API Key
 
 To configure API keys:
 1. Open Raycast preferences (⌘,)
@@ -65,6 +79,7 @@ To configure API keys:
 ### Notes:
 - **JetBrains Junie**: Requires IDE Services automation token (enterprise users only)
 - **GitHub Copilot**: Requires PAT with 'manage_billing:copilot' or 'read:org' scope
+- **Google Gemini**: Create API key at [Google AI Studio](https://aistudio.google.com/app/apikey)
 "
         actions={
           <ActionPanel>

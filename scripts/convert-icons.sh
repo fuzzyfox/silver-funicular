@@ -54,6 +54,15 @@ else
     echo "⚠ assets/copilot-logo.svg not found"
 fi
 
+# Convert Google Gemini logo
+if [ -f "assets/gemini-logo.svg" ]; then
+    echo "Converting gemini-logo.svg to gemini-logo.png (64x64)..."
+    convert assets/gemini-logo.svg -resize 64x64 assets/gemini-logo.png
+    echo "✓ gemini-logo.png created"
+else
+    echo "⚠ assets/gemini-logo.svg not found"
+fi
+
 echo ""
 echo "Icon conversion complete!"
 echo "You can now build the extension with: npm run build"
