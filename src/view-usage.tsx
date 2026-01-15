@@ -1,5 +1,6 @@
 import { List, Icon, Color, ActionPanel, Action, getPreferenceValues, Detail } from "@raycast/api";
 import { usePromise } from "@raycast/utils";
+import React from "react";
 import { getClaudeUsage, formatTokenCount } from "./clients/claude";
 import { AgentUsage } from "./types";
 
@@ -56,7 +57,7 @@ To configure API keys:
 
   return (
     <List isLoading={isLoading} searchBarPlaceholder="Search agents...">
-      {agents?.map((agent, index) => (
+      {agents?.map((agent: AgentUsage, index: number) => (
         <List.Item
           key={index}
           icon={{ source: agent.logoPath, fallback: Icon.RobotFilled }}
