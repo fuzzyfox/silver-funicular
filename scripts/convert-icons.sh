@@ -36,6 +36,15 @@ else
     echo "⚠ assets/claude-logo.svg not found"
 fi
 
+# Convert JetBrains Junie logo
+if [ -f "assets/junie-logo.svg" ]; then
+    echo "Converting junie-logo.svg to junie-logo.png (64x64)..."
+    convert assets/junie-logo.svg -resize 64x64 assets/junie-logo.png
+    echo "✓ junie-logo.png created"
+else
+    echo "⚠ assets/junie-logo.svg not found"
+fi
+
 echo ""
 echo "Icon conversion complete!"
 echo "You can now build the extension with: npm run build"

@@ -26,6 +26,23 @@
       "title": "Anthropic API Key",
       "description": "Your Anthropic API key for Claude usage tracking",
       "placeholder": "sk-ant-..."
+    },
+    {
+      "name": "jetbrainsApiToken",
+      "type": "password",
+      "required": false,
+      "title": "JetBrains Automation Token",
+      "description": "JetBrains IDE Services automation token for Junie usage tracking",
+      "placeholder": "perm:..."
+    },
+    {
+      "name": "jetbrainsServerUrl",
+      "type": "textfield",
+      "required": false,
+      "title": "JetBrains Server URL",
+      "description": "Your JetBrains IDE Services server URL",
+      "default": "https://ide-services.jetbrains.com",
+      "placeholder": "https://ide-services.jetbrains.com"
     }
   ],
   "dependencies": {

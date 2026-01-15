@@ -2,10 +2,13 @@ import { List, Icon, Color, ActionPanel, Action, getPreferenceValues, Detail } f
 import { usePromise } from "@raycast/utils";
 import React from "react";
 import { getClaudeUsage, formatTokenCount } from "./clients/claude";
+import { getJetBrainsUsage } from "./clients/jetbrains";
 import { AgentUsage } from "./types";
 
 interface Preferences {
   anthropicApiKey?: string;
+  jetbrainsApiToken?: string;
+  jetbrainsServerUrl?: string;
 }
 
 export default function Command() {
@@ -21,12 +24,18 @@ export default function Command() {
       results.push(claudeUsage);
     }
 
+    // Fetch JetBrains Junie usage if API token is configured
+    if (preferences.jetbrainsApiToken) {
+      const jetbrainsUsage = await getJetBrainsUsage();
+      results.push(jetbrainsUsage);
+    }
+
     // Future: Add more agents here (OpenAI, etc.)
 
     return results;
   }
 
-  if (!preferences.anthropicApiKey) {
+  if (!preferences.anthropicApiKey && !preferences.jetbrainsApiToken) {
     return (
       <Detail
         markdown="# No API Keys Configured
@@ -35,12 +44,16 @@ Please configure at least one API key in the extension preferences to track agen
 
 ## Supported Agents:
 - **Claude Code** - Requires Anthropic API Key
+- **JetBrains Junie** - Requires JetBrains IDE Services Automation Token
 
 To configure API keys:
 1. Open Raycast preferences (⌘,)
 2. Navigate to Extensions
 3. Select Agent Usage Tracker
-4. Enter your API key(s)
+4. Enter your API key(s) or token(s)
+
+### Note on JetBrains Junie
+JetBrains Junie tracking requires a JetBrains IDE Services automation token, which is available for enterprise users. Personal JetBrains AI accounts can track usage through the IDE widget.
 "
         actions={
           <ActionPanel>
