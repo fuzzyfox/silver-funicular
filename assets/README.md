@@ -10,6 +10,7 @@ This directory contains the icons and logos for the Agent Usage Tracker extensio
 ### Agent Logos
 - **claude-logo.png** - Claude/Anthropic logo (64x64px recommended)
 - **junie-logo.png** - JetBrains Junie logo (64x64px recommended)
+- **copilot-logo.png** - GitHub Copilot logo (64x64px recommended)
 
 ## Where to Get Logos
 
@@ -20,6 +21,10 @@ Download from Anthropic's brand assets or use their official logo from:
 ### JetBrains Junie Logo
 Download from JetBrains' brand assets or use their official logo from:
 - https://www.jetbrains.com/company/brand/
+
+### GitHub Copilot Logo
+Download from GitHub's official logos or use their official logo from:
+- https://github.com/logos
 
 ### Creating Icons
 You can create simple placeholder icons using:

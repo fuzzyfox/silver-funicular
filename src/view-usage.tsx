@@ -3,12 +3,15 @@ import { usePromise } from "@raycast/utils";
 import React from "react";
 import { getClaudeUsage, formatTokenCount } from "./clients/claude";
 import { getJetBrainsUsage } from "./clients/jetbrains";
+import { getCopilotUsage } from "./clients/copilot";
 import { AgentUsage } from "./types";
 
 interface Preferences {
   anthropicApiKey?: string;
   jetbrainsApiToken?: string;
   jetbrainsServerUrl?: string;
+  githubToken?: string;
+  githubOrg?: string;
 }
 
 export default function Command() {
@@ -30,12 +33,18 @@ export default function Command() {
       results.push(jetbrainsUsage);
     }
 
-    // Future: Add more agents here (OpenAI, etc.)
+    // Fetch GitHub Copilot usage if token and org are configured
+    if (preferences.githubToken && preferences.githubOrg) {
+      const copilotUsage = await getCopilotUsage();
+      results.push(copilotUsage);
+    }
+
+    // Future: Add more agents here (OpenAI, Google Gemini, etc.)
 
     return results;
   }
 
-  if (!preferences.anthropicApiKey && !preferences.jetbrainsApiToken) {
+  if (!preferences.anthropicApiKey && !preferences.jetbrainsApiToken && !preferences.githubToken) {
     return (
       <Detail
         markdown="# No API Keys Configured
@@ -45,6 +54,7 @@ Please configure at least one API key in the extension preferences to track agen
 ## Supported Agents:
 - **Claude Code** - Requires Anthropic API Key
 - **JetBrains Junie** - Requires JetBrains IDE Services Automation Token
+- **GitHub Copilot** - Requires GitHub Personal Access Token and Organization name
 
 To configure API keys:
 1. Open Raycast preferences (⌘,)
@@ -52,8 +62,9 @@ To configure API keys:
 3. Select Agent Usage Tracker
 4. Enter your API key(s) or token(s)
 
-### Note on JetBrains Junie
-JetBrains Junie tracking requires a JetBrains IDE Services automation token, which is available for enterprise users. Personal JetBrains AI accounts can track usage through the IDE widget.
+### Notes:
+- **JetBrains Junie**: Requires IDE Services automation token (enterprise users only)
+- **GitHub Copilot**: Requires PAT with 'manage_billing:copilot' or 'read:org' scope
 "
         actions={
           <ActionPanel>

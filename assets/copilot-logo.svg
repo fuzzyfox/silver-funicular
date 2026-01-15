@@ -1,0 +1,25 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- GitHub Copilot placeholder logo -->
+  <!-- Replace with official GitHub Copilot logo -->
+
+  <!-- Background -->
+  <rect width="64" height="64" rx="8" fill="#24292e"/>
+
+  <!-- Copilot icon representation (simplified) -->
+  <!-- Head -->
+  <circle cx="32" cy="24" r="8" fill="#58a6ff"/>
+
+  <!-- Eyes -->
+  <circle cx="28" cy="23" r="2" fill="#24292e"/>
+  <circle cx="36" cy="23" r="2" fill="#24292e"/>
+
+  <!-- Body -->
+  <path d="M24 32 Q32 36 40 32 L40 48 Q32 52 24 48 Z" fill="#58a6ff"/>
+
+  <!-- Propeller/Wings -->
+  <ellipse cx="18" cy="34" rx="6" ry="2" fill="#79c0ff" opacity="0.8"/>
+  <ellipse cx="46" cy="34" rx="6" ry="2" fill="#79c0ff" opacity="0.8"/>
+
+  <!-- GitHub mark accent -->
+  <circle cx="32" cy="56" r="2" fill="#f0883e"/>
+</svg>

@@ -16,6 +16,7 @@ Track usage and limits across multiple AI agents directly from Raycast. Monitor 
 
 - **Claude Code** - Track Anthropic Claude API usage via token consumption
 - **JetBrains Junie** - Track JetBrains AI Assistant usage via IDE Services API
+- **GitHub Copilot** - Track GitHub Copilot seat usage and code acceptance rates
 
 ### Coming Soon
 
@@ -55,12 +56,14 @@ npm install
 convert assets/icon.svg -resize 512x512 assets/icon.png
 convert assets/claude-logo.svg -resize 64x64 assets/claude-logo.png
 convert assets/junie-logo.svg -resize 64x64 assets/junie-logo.png
+convert assets/copilot-logo.svg -resize 64x64 assets/copilot-logo.png
 ```
 
 Alternatively, download official logos:
 
 - Claude: Get from [Anthropic Brand Assets](https://www.anthropic.com/brand)
 - JetBrains Junie: Get from [JetBrains Brand Assets](https://www.jetbrains.com/company/brand/)
+- GitHub Copilot: Get from [GitHub Logos](https://github.com/logos)
 
 4. Build the extension:
 
@@ -82,6 +85,8 @@ npm run dev
    - **Anthropic API Key**: Get from [Anthropic Console](https://console.anthropic.com/)
    - **JetBrains Automation Token**: Get from your JetBrains IDE Services instance
    - **JetBrains Server URL**: Your IDE Services URL (default: https://ide-services.jetbrains.com)
+   - **GitHub Personal Access Token**: Create at [GitHub Settings → Developer settings → Personal access tokens](https://github.com/settings/tokens)
+   - **GitHub Organization**: Your GitHub organization name
 
 ## Usage
 
@@ -142,6 +147,45 @@ The extension uses the JetBrains IDE Services AI Analytics API to track Junie us
 - [AI Analytics API Guide](https://www.jetbrains.com/help/ide-services/ai-analytics-api.html)
 - [JetBrains AI Assistant](https://www.jetbrains.com/ai/)
 
+### GitHub Copilot Metrics API
+
+The extension uses the GitHub Copilot Metrics API to track seat usage and code acceptance rates. You'll need:
+
+- A GitHub Personal Access Token (PAT) with appropriate scopes
+- Access to your organization's Copilot metrics
+- Your GitHub organization name
+
+**API Endpoints Used:**
+
+- `GET /orgs/{org}/copilot/metrics` - Retrieves aggregated Copilot usage metrics including active users, code suggestions, and acceptance rates
+
+**Authentication:**
+
+- Bearer token authentication using Personal Access Token (PAT)
+- Required scopes: `manage_billing:copilot`, `read:org`, or `read:enterprise`
+- Create tokens at: GitHub Settings → Developer settings → Personal access tokens
+
+**Metrics Tracked:**
+
+- Total active users (licensed seats)
+- Total engaged users (users actively using Copilot)
+- Code completions (suggestions and acceptances)
+- Acceptance rate percentage
+- Breakdown by language, editor, and model
+
+**Important Notes:**
+
+- The Copilot Metrics API access policy must be enabled for your organization
+- Only organization owners and billing managers can view Copilot metrics
+- Metrics are processed daily for the previous day (up to 100 days of history)
+- Endpoint only returns results if organization has 5+ members with active Copilot licenses
+
+**Learn More:**
+
+- [GitHub Copilot Metrics API Documentation](https://docs.github.com/en/rest/copilot/copilot-metrics)
+- [Copilot Usage Metrics Guide](https://docs.github.com/en/copilot/concepts/copilot-metrics)
+- [Interpreting Copilot Metrics](https://docs.github.com/en/copilot/reference/copilot-usage-metrics/interpret-copilot-metrics)
+
 ## Development
 
 ### Project Structure
@@ -152,7 +196,8 @@ silver-funicular/
 ├── src/
 │   ├── clients/      # API clients for each agent
 │   │   ├── claude.ts
-│   │   └── jetbrains.ts
+│   │   ├── jetbrains.ts
+│   │   └── copilot.ts
 │   ├── types.ts      # TypeScript type definitions
 │   └── view-usage.tsx # Main UI component
 ├── package.json

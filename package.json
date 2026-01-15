@@ -43,6 +43,22 @@
       "description": "Your JetBrains IDE Services server URL",
       "default": "https://ide-services.jetbrains.com",
       "placeholder": "https://ide-services.jetbrains.com"
+    },
+    {
+      "name": "githubToken",
+      "type": "password",
+      "required": false,
+      "title": "GitHub Personal Access Token",
+      "description": "GitHub PAT with 'manage_billing:copilot' or 'read:org' scope for Copilot usage tracking",
+      "placeholder": "ghp_..."
+    },
+    {
+      "name": "githubOrg",
+      "type": "textfield",
+      "required": false,
+      "title": "GitHub Organization",
+      "description": "Your GitHub organization name for Copilot metrics",
+      "placeholder": "my-org"
     }
   ],
   "dependencies": {

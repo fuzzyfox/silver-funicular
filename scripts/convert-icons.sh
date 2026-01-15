@@ -45,6 +45,15 @@ else
     echo "⚠ assets/junie-logo.svg not found"
 fi
 
+# Convert GitHub Copilot logo
+if [ -f "assets/copilot-logo.svg" ]; then
+    echo "Converting copilot-logo.svg to copilot-logo.png (64x64)..."
+    convert assets/copilot-logo.svg -resize 64x64 assets/copilot-logo.png
+    echo "✓ copilot-logo.png created"
+else
+    echo "⚠ assets/copilot-logo.svg not found"
+fi
+
 echo ""
 echo "Icon conversion complete!"
 echo "You can now build the extension with: npm run build"

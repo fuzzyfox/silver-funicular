@@ -12,13 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial release
 - Claude Code usage tracking via Anthropic API
 - JetBrains Junie usage tracking via IDE Services API
-- Token/invocation usage and limit display
+- GitHub Copilot usage tracking via GitHub REST API
+- Token/invocation/seat usage and limit display
 - Color-coded usage indicators
 - Preference-based API key configuration
 - Real-time usage refresh
 - Detailed view with metadata
 - Error handling and user feedback
-- Acceptance rate tracking for JetBrains Junie
+- Acceptance rate tracking for JetBrains Junie and GitHub Copilot
 
 ### Coming Soon
 
