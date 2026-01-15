@@ -106,10 +106,7 @@ To configure API keys:
                     text={`${agent.usagePercentage.toFixed(1)}%`}
                     icon={{ source: Icon.BarChart, tintColor: getUsageColor(agent.usagePercentage) }}
                   />
-                  <List.Item.Detail.Metadata.Label
-                    title="Current Usage"
-                    text={formatTokenCount(agent.currentUsage)}
-                  />
+                  <List.Item.Detail.Metadata.Label title="Current Usage" text={formatTokenCount(agent.currentUsage)} />
                   <List.Item.Detail.Metadata.Label title="Limit" text={formatTokenCount(agent.limit)} />
                   {agent.error && (
                     <>
