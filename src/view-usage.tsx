@@ -2,6 +2,7 @@ import { List, Icon, Color, ActionPanel, Action } from "@raycast/api";
 import { usePromise } from "@raycast/utils";
 import React from "react";
 import { getClaudeUsage } from "./clients/claude";
+import { getCodexUsage } from "./clients/codex";
 import { AgentUsage, UsageWindow } from "./types";
 
 export default function Command() {
@@ -50,8 +51,8 @@ export default function Command() {
 }
 
 async function fetchAllAgents(): Promise<AgentUsage[]> {
-  // Run providers concurrently; add Codex here once its endpoint is wired up.
-  const results = await Promise.all([getClaudeUsage()]);
+  // Run providers concurrently.
+  const results = await Promise.all([getClaudeUsage(), getCodexUsage()]);
   return results;
 }
 

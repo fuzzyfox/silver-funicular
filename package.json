@@ -14,7 +14,7 @@
     {
       "name": "view-usage",
       "title": "View Agent Usage",
-      "description": "View your remaining Claude subscription rate-limit windows",
+      "description": "View your remaining Claude and Codex subscription rate-limit windows",
       "mode": "view"
     }
   ],

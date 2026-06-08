@@ -44,3 +44,29 @@ export interface ClaudeUsageWindow {
   /** ISO 8601 UTC timestamp. */
   resets_at: string;
 }
+
+/** Raw shape of GET https://chatgpt.com/backend-api/wham/usage. */
+export interface CodexUsageResponse {
+  /** Plan tier, e.g. "plus", "pro", "team". */
+  plan_type?: string | null;
+  rate_limit?: {
+    /** Rolling 5-hour window. */
+    primary_window?: CodexRateLimitWindow | null;
+    /** Rolling 7-day window. */
+    secondary_window?: CodexRateLimitWindow | null;
+  } | null;
+  credits?: {
+    has_credits?: boolean;
+    unlimited?: boolean;
+    balance?: number | null;
+  } | null;
+}
+
+export interface CodexRateLimitWindow {
+  /** 0–100. */
+  used_percent: number;
+  /** Unix timestamp (seconds) when the window resets. */
+  reset_at?: number | null;
+  /** Window duration in seconds. */
+  limit_window_seconds?: number | null;
+}
