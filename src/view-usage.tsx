@@ -1,178 +1,90 @@
-import { List, Icon, Color, ActionPanel, Action, getPreferenceValues, Detail } from "@raycast/api";
+import { List, Icon, Color, ActionPanel, Action } from "@raycast/api";
 import { usePromise } from "@raycast/utils";
 import React from "react";
-import { getClaudeUsage, formatTokenCount } from "./clients/claude";
-import { getJetBrainsUsage } from "./clients/jetbrains";
-import { getCopilotUsage } from "./clients/copilot";
-import { getGoogleGeminiUsage } from "./clients/google-gemini";
-import { AgentUsage } from "./types";
-
-interface Preferences {
-  anthropicApiKey?: string;
-  jetbrainsApiToken?: string;
-  jetbrainsServerUrl?: string;
-  githubToken?: string;
-  githubOrg?: string;
-  googleApiKey?: string;
-}
+import { getClaudeUsage } from "./clients/claude";
+import { AgentUsage, UsageWindow } from "./types";
 
 export default function Command() {
-  const preferences = getPreferenceValues<Preferences>();
   const { data: agents, isLoading, revalidate } = usePromise(fetchAllAgents);
 
-  async function fetchAllAgents(): Promise<AgentUsage[]> {
-    const results: AgentUsage[] = [];
-
-    // Fetch Claude usage if API key is configured
-    if (preferences.anthropicApiKey) {
-      const claudeUsage = await getClaudeUsage();
-      results.push(claudeUsage);
-    }
-
-    // Fetch JetBrains Junie usage if API token is configured
-    if (preferences.jetbrainsApiToken) {
-      const jetbrainsUsage = await getJetBrainsUsage();
-      results.push(jetbrainsUsage);
-    }
-
-    // Fetch GitHub Copilot usage if token and org are configured
-    if (preferences.githubToken && preferences.githubOrg) {
-      const copilotUsage = await getCopilotUsage();
-      results.push(copilotUsage);
-    }
-
-    // Fetch Google Gemini usage if API key is configured
-    if (preferences.googleApiKey) {
-      const geminiUsage = await getGoogleGeminiUsage();
-      results.push(geminiUsage);
-    }
-
-    // Future: Add more agents here (OpenAI, etc.)
-
-    return results;
-  }
-
-  if (
-    !preferences.anthropicApiKey &&
-    !preferences.jetbrainsApiToken &&
-    !preferences.githubToken &&
-    !preferences.googleApiKey
-  ) {
-    return (
-      <Detail
-        markdown="# No API Keys Configured
-
-Please configure at least one API key in the extension preferences to track agent usage.
-
-## Supported Agents:
-- **Claude Code** - Requires Anthropic API Key
-- **JetBrains Junie** - Requires JetBrains IDE Services Automation Token
-- **GitHub Copilot** - Requires GitHub Personal Access Token and Organization name
-- **Google Gemini** - Requires Google AI Studio API Key
-
-To configure API keys:
-1. Open Raycast preferences (⌘,)
-2. Navigate to Extensions
-3. Select Agent Usage Tracker
-4. Enter your API key(s) or token(s)
-
-### Notes:
-- **JetBrains Junie**: Requires IDE Services automation token (enterprise users only)
-- **GitHub Copilot**: Requires PAT with 'manage_billing:copilot' or 'read:org' scope
-- **Google Gemini**: Create API key at [Google AI Studio](https://aistudio.google.com/app/apikey)
-"
-        actions={
-          <ActionPanel>
-            <Action.Open
-              title="Open Extension Preferences"
-              target="raycast://extensions/your-name/agent-usage-tracker"
-              icon={Icon.Gear}
-            />
-          </ActionPanel>
-        }
-      />
-    );
-  }
-
   return (
-    <List isLoading={isLoading} searchBarPlaceholder="Search agents...">
-      {agents?.map((agent: AgentUsage, index: number) => (
-        <List.Item
-          key={index}
-          icon={{ source: agent.logoPath, fallback: Icon.RobotFilled }}
-          title={agent.name}
-          subtitle={agent.model}
-          accessories={[
-            {
-              tag: {
-                value: `${agent.usagePercentage.toFixed(1)}%`,
-                color: getUsageColor(agent.usagePercentage),
-              },
-            },
-            {
-              text: agent.error
-                ? "Error"
-                : `${formatTokenCount(agent.currentUsage)} / ${formatTokenCount(agent.limit)}`,
-              icon: agent.error ? Icon.ExclamationMark : Icon.BarChart,
-            },
-          ]}
-          actions={
-            <ActionPanel>
-              <Action
-                title="Refresh"
-                icon={Icon.ArrowClockwise}
-                onAction={revalidate}
-                shortcut={{ modifiers: ["cmd"], key: "r" }}
-              />
-              {agent.error && (
-                <Action.CopyToClipboard
-                  title="Copy Error"
-                  content={agent.error}
-                  shortcut={{ modifiers: ["cmd"], key: "e" }}
-                />
-              )}
-            </ActionPanel>
-          }
-          detail={
-            <List.Item.Detail
-              metadata={
-                <List.Item.Detail.Metadata>
-                  <List.Item.Detail.Metadata.Label title="Agent" text={agent.name} />
-                  <List.Item.Detail.Metadata.Label title="Model" text={agent.model} />
-                  <List.Item.Detail.Metadata.Separator />
-                  <List.Item.Detail.Metadata.Label
-                    title="Usage"
-                    text={`${agent.usagePercentage.toFixed(1)}%`}
-                    icon={{ source: Icon.BarChart, tintColor: getUsageColor(agent.usagePercentage) }}
-                  />
-                  <List.Item.Detail.Metadata.Label title="Current Usage" text={formatTokenCount(agent.currentUsage)} />
-                  <List.Item.Detail.Metadata.Label title="Limit" text={formatTokenCount(agent.limit)} />
-                  {agent.error && (
-                    <>
-                      <List.Item.Detail.Metadata.Separator />
-                      <List.Item.Detail.Metadata.Label title="Error" text={agent.error} icon={Icon.ExclamationMark} />
-                    </>
-                  )}
-                </List.Item.Detail.Metadata>
-              }
+    <List isLoading={isLoading} searchBarPlaceholder="Search usage…">
+      {agents?.map((agent) => (
+        <List.Section key={agent.name} title={agent.name} subtitle={agent.detail}>
+          {agent.error ? (
+            <List.Item
+              icon={{ source: agent.logoPath, fallback: Icon.Stars }}
+              title={agent.error}
+              subtitle={agent.hint}
+              accessories={[{ icon: { source: Icon.ExclamationMark, tintColor: Color.Red } }]}
+              actions={<Actions onRefresh={revalidate} copyText={agent.hint ?? agent.error} />}
             />
-          }
-        />
+          ) : (
+            agent.windows.map((window) => (
+              <List.Item
+                key={window.label}
+                icon={{ source: agent.logoPath, fallback: Icon.Stars }}
+                title={window.label}
+                accessories={[
+                  { text: resetText(window) },
+                  {
+                    tag: {
+                      value: `${window.utilization.toFixed(0)}%`,
+                      color: usageColor(window.utilization),
+                    },
+                  },
+                ]}
+                actions={<Actions onRefresh={revalidate} />}
+              />
+            ))
+          )}
+        </List.Section>
       ))}
-      {agents?.length === 0 && (
-        <List.EmptyView
-          title="No Agents Configured"
-          description="Please configure API keys in preferences to track agent usage"
-          icon={Icon.RobotFilled}
-        />
-      )}
+      <List.EmptyView
+        title="No usage to show"
+        description="Sign in to Claude Code with `claude`, then refresh."
+        icon={Icon.BarChart}
+      />
     </List>
   );
 }
 
-function getUsageColor(percentage: number): Color {
+async function fetchAllAgents(): Promise<AgentUsage[]> {
+  // Run providers concurrently; add Codex here once its endpoint is wired up.
+  const results = await Promise.all([getClaudeUsage()]);
+  return results;
+}
+
+function Actions({ onRefresh, copyText }: { onRefresh: () => void; copyText?: string }) {
+  return (
+    <ActionPanel>
+      <Action
+        title="Refresh"
+        icon={Icon.ArrowClockwise}
+        onAction={onRefresh}
+        shortcut={{ modifiers: ["cmd"], key: "r" }}
+      />
+      {copyText && (
+        <Action.CopyToClipboard title="Copy Message" content={copyText} shortcut={{ modifiers: ["cmd"], key: "c" }} />
+      )}
+    </ActionPanel>
+  );
+}
+
+function usageColor(percentage: number): Color {
   if (percentage >= 90) return Color.Red;
   if (percentage >= 75) return Color.Orange;
   if (percentage >= 50) return Color.Yellow;
   return Color.Green;
+}
+
+function resetText(window: UsageWindow): string {
+  if (!window.resetsAt) return "";
+  const ms = window.resetsAt.getTime() - Date.now();
+  if (ms <= 0) return "resetting…";
+  const minutes = Math.round(ms / 60000);
+  if (minutes < 60) return `resets in ${minutes}m`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 48) return `resets in ${hours}h`;
+  return `resets in ${Math.round(hours / 24)}d`;
 }

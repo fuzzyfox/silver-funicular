@@ -1,150 +1,88 @@
-import { getPreferenceValues } from "@raycast/api";
-import { AgentUsage } from "../types";
+import { AgentUsage, ClaudeOAuthUsageResponse, ClaudeUsageWindow, UsageWindow } from "../types";
+import { getClaudeToken, isExpired } from "../auth/claude";
 
-interface Preferences {
-  anthropicApiKey?: string;
-}
+const USAGE_ENDPOINT = "https://api.anthropic.com/api/oauth/usage";
 
-interface OrganizationUsage {
-  input_tokens: number;
-  output_tokens: number;
-  cache_creation_tokens?: number;
-  cache_read_tokens?: number;
-}
+// The endpoint rate-limits aggressively unless it sees a claude-code User-Agent.
+// The exact version doesn't matter; it just needs the claude-code/ prefix.
+const USER_AGENT = "claude-code/2.1.168";
 
-interface UsageResponse {
-  data: Array<{
-    date: string;
-    workspaces: Array<{
-      workspace_id: string;
-      workspace_name: string;
-      model_name: string;
-      usage: OrganizationUsage[];
-    }>;
-  }>;
-}
+const REFRESH_HINT = "Run `claude` once to refresh your session, then retry.";
 
+/**
+ * Fetch Claude subscription usage from Anthropic's OAuth usage endpoint —
+ * the same server-side window state Claude Code's /usage shows, so it
+ * reflects usage across all your devices (desktop, mobile, web).
+ */
 export async function getClaudeUsage(): Promise<AgentUsage> {
-  const preferences = getPreferenceValues<Preferences>();
-  const apiKey = preferences.anthropicApiKey;
+  const base: Pick<AgentUsage, "name" | "logoPath"> = {
+    name: "Claude",
+    logoPath: "claude-logo.png",
+  };
 
-  if (!apiKey) {
+  const token = await getClaudeToken();
+  if (!token) {
     return {
-      name: "Claude Code",
-      model: "Not configured",
-      usagePercentage: 0,
-      currentUsage: 0,
-      limit: 0,
-      logoPath: "claude-logo.png",
-      error: "API key not configured",
+      ...base,
+      windows: [],
+      error: "Not signed in to Claude Code.",
+      hint: "Run `claude` and sign in, then retry.",
     };
   }
 
+  if (isExpired(token)) {
+    return { ...base, windows: [], error: "Claude session expired.", hint: REFRESH_HINT };
+  }
+
   try {
-    // First, try to get organization information
-    const orgResponse = await fetch("https://api.anthropic.com/v1/organizations", {
+    const response = await fetch(USAGE_ENDPOINT, {
       method: "GET",
       headers: {
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
+        Authorization: `Bearer ${token.accessToken}`,
+        "anthropic-beta": "oauth-2025-04-20",
+        "User-Agent": USER_AGENT,
         "Content-Type": "application/json",
       },
     });
 
-    if (!orgResponse.ok) {
-      throw new Error(`Failed to fetch organization info: ${orgResponse.status}`);
+    if (response.status === 401) {
+      return { ...base, windows: [], error: "Claude session unauthorized.", hint: REFRESH_HINT };
+    }
+    if (!response.ok) {
+      return { ...base, windows: [], error: `Usage request failed (${response.status}).` };
     }
 
-    // Try to get usage data from the billing endpoint
-    // Note: The Anthropic API has different endpoints depending on the account type
-    // For Claude Code specifically, we'll need to use the appropriate workspace/organization endpoint
+    const data = (await response.json()) as ClaudeOAuthUsageResponse;
+    const windows = toWindows(data);
 
-    // Attempt to get usage statistics
-    const today = new Date();
-    const startDate = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split("T")[0];
-    const endDate = today.toISOString().split("T")[0];
-
-    const usageResponse = await fetch(
-      `https://api.anthropic.com/v1/organization/usage?start_date=${startDate}&end_date=${endDate}`,
-      {
-        method: "GET",
-        headers: {
-          "x-api-key": apiKey,
-          "anthropic-version": "2023-06-01",
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (usageResponse.ok) {
-      const usageData = (await usageResponse.json()) as UsageResponse;
-
-      // Calculate total usage
-      let totalInputTokens = 0;
-      let totalOutputTokens = 0;
-      let modelName = "claude-sonnet-4-5";
-
-      if (usageData.data && usageData.data.length > 0) {
-        usageData.data.forEach((day) => {
-          day.workspaces.forEach((workspace) => {
-            if (workspace.model_name) {
-              modelName = workspace.model_name;
-            }
-            workspace.usage.forEach((usage) => {
-              totalInputTokens += usage.input_tokens || 0;
-              totalOutputTokens += usage.output_tokens || 0;
-            });
-          });
-        });
-      }
-
-      const totalTokens = totalInputTokens + totalOutputTokens;
-
-      // Anthropic's typical monthly limit for API usage (this varies by plan)
-      // For display purposes, we'll use a default limit
-      // Users on different plans will have different limits
-      const estimatedLimit = 1000000; // 1M tokens as default
-      const usagePercentage = estimatedLimit > 0 ? Math.min((totalTokens / estimatedLimit) * 100, 100) : 0;
-
-      return {
-        name: "Claude Code",
-        model: modelName,
-        usagePercentage: Math.round(usagePercentage * 10) / 10,
-        currentUsage: totalTokens,
-        limit: estimatedLimit,
-        logoPath: "claude-logo.png",
-      };
+    if (windows.length === 0) {
+      return { ...base, windows: [], error: "No usage windows reported." };
     }
 
-    // Fallback: Return basic info if usage endpoint is not available
-    return {
-      name: "Claude Code",
-      model: "claude-sonnet-4-5",
-      usagePercentage: 0,
-      currentUsage: 0,
-      limit: 0,
-      logoPath: "claude-logo.png",
-      error: "Usage data not available. This may require specific API permissions.",
-    };
+    return { ...base, windows };
   } catch (error) {
-    console.error("Error fetching Claude usage:", error);
     return {
-      name: "Claude Code",
-      model: "Error",
-      usagePercentage: 0,
-      currentUsage: 0,
-      limit: 0,
-      logoPath: "claude-logo.png",
-      error: error instanceof Error ? error.message : "Unknown error occurred",
+      ...base,
+      windows: [],
+      error: error instanceof Error ? error.message : "Unknown error fetching usage.",
     };
   }
 }
 
-export function formatTokenCount(tokens: number): string {
-  if (tokens >= 1000000) {
-    return `${(tokens / 1000000).toFixed(2)}M`;
-  } else if (tokens >= 1000) {
-    return `${(tokens / 1000).toFixed(2)}K`;
-  }
-  return tokens.toString();
+function toWindows(data: ClaudeOAuthUsageResponse): UsageWindow[] {
+  const windows: UsageWindow[] = [];
+  push(windows, "5 hour", data.five_hour);
+  push(windows, "7 day", data.seven_day);
+  push(windows, "7 day (Opus)", data.seven_day_opus);
+  push(windows, "7 day (Sonnet)", data.seven_day_sonnet);
+  return windows;
+}
+
+function push(windows: UsageWindow[], label: string, window: ClaudeUsageWindow | null | undefined) {
+  if (!window || typeof window.utilization !== "number") return;
+  windows.push({
+    label,
+    utilization: window.utilization,
+    resetsAt: window.resets_at ? new Date(window.resets_at) : undefined,
+  });
 }

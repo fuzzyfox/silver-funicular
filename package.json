@@ -2,71 +2,20 @@
   "$schema": "https://www.raycast.com/schemas/extension.json",
   "name": "agent-usage-tracker",
   "title": "Agent Usage Tracker",
-  "description": "Track usage and limits across multiple AI agents",
+  "description": "Track your personal Claude (and Codex) subscription usage from Raycast",
   "icon": "icon.png",
-  "author": "your-name",
+  "author": "fuzzyfox",
   "categories": [
     "Developer Tools",
     "Productivity"
   ],
-  "license": "MIT",
+  "license": "MPL-2.0",
   "commands": [
     {
       "name": "view-usage",
       "title": "View Agent Usage",
-      "description": "View usage statistics for all configured AI agents",
+      "description": "View your remaining Claude subscription rate-limit windows",
       "mode": "view"
-    }
-  ],
-  "preferences": [
-    {
-      "name": "anthropicApiKey",
-      "type": "password",
-      "required": false,
-      "title": "Anthropic API Key",
-      "description": "Your Anthropic API key for Claude usage tracking",
-      "placeholder": "sk-ant-..."
-    },
-    {
-      "name": "jetbrainsApiToken",
-      "type": "password",
-      "required": false,
-      "title": "JetBrains Automation Token",
-      "description": "JetBrains IDE Services automation token for Junie usage tracking",
-      "placeholder": "perm:..."
-    },
-    {
-      "name": "jetbrainsServerUrl",
-      "type": "textfield",
-      "required": false,
-      "title": "JetBrains Server URL",
-      "description": "Your JetBrains IDE Services server URL",
-      "default": "https://ide-services.jetbrains.com",
-      "placeholder": "https://ide-services.jetbrains.com"
-    },
-    {
-      "name": "githubToken",
-      "type": "password",
-      "required": false,
-      "title": "GitHub Personal Access Token",
-      "description": "GitHub PAT with 'manage_billing:copilot' or 'read:org' scope for Copilot usage tracking",
-      "placeholder": "ghp_..."
-    },
-    {
-      "name": "githubOrg",
-      "type": "textfield",
-      "required": false,
-      "title": "GitHub Organization",
-      "description": "Your GitHub organization name for Copilot metrics",
-      "placeholder": "my-org"
-    },
-    {
-      "name": "googleApiKey",
-      "type": "password",
-      "required": false,
-      "title": "Google API Key",
-      "description": "Google AI Studio API key for Gemini usage tracking",
-      "placeholder": "AIza..."
     }
   ],
   "dependencies": {
@@ -75,8 +24,8 @@
   },
   "devDependencies": {
     "@raycast/eslint-config": "^1.0.8",
-    "@types/node": "20.8.10",
-    "@types/react": "18.2.27",
+    "@types/node": "22.13.0",
+    "@types/react": "19.0.10",
     "eslint": "^8.51.0",
     "prettier": "^3.0.3",
     "typescript": "^5.2.2"

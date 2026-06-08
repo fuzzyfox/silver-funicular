@@ -1,366 +1,82 @@
-# Agent Usage Tracker - Raycast Extension
+# Agent Usage Tracker — Raycast Extension
 
-Track usage and limits across multiple AI agents directly from Raycast. Monitor your token consumption, model usage, and stay informed about your API limits.
+Check your **personal** AI subscription usage from Raycast — how much of your
+Claude (and, soon, Codex) rate-limit windows you've consumed — without leaving
+the launcher.
+
+Usage is read **server-side**, from the same authenticated endpoint Claude
+Code's `/usage` command uses, so it reflects your consumption across **all**
+devices (desktop, mobile, web), not just this machine.
 
 ## Features
 
-- 📊 Real-time usage tracking for AI agents
-- 🔄 Quick refresh to get latest data
-- 🎨 Color-coded usage indicators (green, yellow, orange, red)
-- 🔐 Secure API key storage via Raycast preferences
-- 📱 Clean, native Raycast interface
-
-## Supported Agents
-
-### Current
-
-- **Claude Code** - Track Anthropic Claude API usage via token consumption
-- **JetBrains Junie** - Track JetBrains AI Assistant usage via IDE Services API
-- **GitHub Copilot** - Track GitHub Copilot seat usage and code acceptance rates
-- **Google Gemini** - Track Google Gemini API rate limits and quota tier
-
-### Coming Soon
-
-- OpenAI GPT models
-- Cohere
-- And more...
-
-## Installation
-
-### Prerequisites
-
-- [Raycast](https://www.raycast.com/) (macOS only)
-- [Node.js](https://nodejs.org/) (v18 or higher)
-- npm or yarn
-
-### Setup
-
-1. Clone this repository:
-
-```bash
-git clone <repository-url>
-cd silver-funicular
-```
-
-2. Install dependencies:
-
-```bash
-npm install
-```
-
-3. Convert SVG icons to PNG:
-
-```bash
-# You'll need to convert the SVG files in /assets to PNG format
-# Use any SVG to PNG converter, or use the following if you have ImageMagick:
-convert assets/icon.svg -resize 512x512 assets/icon.png
-convert assets/claude-logo.svg -resize 64x64 assets/claude-logo.png
-convert assets/junie-logo.svg -resize 64x64 assets/junie-logo.png
-convert assets/copilot-logo.svg -resize 64x64 assets/copilot-logo.png
-convert assets/gemini-logo.svg -resize 64x64 assets/gemini-logo.png
-```
-
-Alternatively, download official logos:
-
-- Claude: Get from [Anthropic Brand Assets](https://www.anthropic.com/brand)
-- JetBrains Junie: Get from [JetBrains Brand Assets](https://www.jetbrains.com/company/brand/)
-- GitHub Copilot: Get from [GitHub Logos](https://github.com/logos)
-- Google Gemini: Get from [Google Brand Assets](https://about.google/brand-resource-center/)
-
-4. Build the extension:
-
-```bash
-npm run build
-```
-
-5. Import into Raycast:
-
-```bash
-npm run dev
-```
-
-## Configuration
-
-1. Open Raycast preferences (⌘,)
-2. Navigate to Extensions → Agent Usage Tracker
-3. Enter your API key(s):
-   - **Anthropic API Key**: Get from [Anthropic Console](https://console.anthropic.com/)
-   - **JetBrains Automation Token**: Get from your JetBrains IDE Services instance
-   - **JetBrains Server URL**: Your IDE Services URL (default: https://ide-services.jetbrains.com)
-   - **GitHub Personal Access Token**: Create at [GitHub Settings → Developer settings → Personal access tokens](https://github.com/settings/tokens)
-   - **GitHub Organization**: Your GitHub organization name
-
-## Usage
-
-1. Open Raycast (⌘Space)
-2. Type "View Agent Usage"
-3. See your current usage across all configured agents
-4. Press ⌘R to refresh the data
-
-### Understanding the Display
-
-Each agent shows:
-
-- **Name**: The agent/service name
-- **Model**: Current model in use (e.g., claude-sonnet-4-5)
-- **Usage %**: Percentage of your limit used (color-coded)
-- **Tokens**: Current usage / Total limit
-
-#### Color Indicators
-
-- 🟢 Green: 0-49% (Safe)
-- 🟡 Yellow: 50-74% (Moderate)
-- 🟠 Orange: 75-89% (High)
-- 🔴 Red: 90-100% (Critical)
-
-## API Information
-
-### Anthropic API
-
-The extension uses the Anthropic API to fetch usage data. You'll need:
-
-- An Anthropic API key from [console.anthropic.com](https://console.anthropic.com/)
-- Appropriate permissions to access organization usage data
-
-**Note**: Usage tracking requires organization-level API access. Personal API keys may have limited access to usage statistics.
-
-### JetBrains IDE Services API
-
-The extension uses the JetBrains IDE Services AI Analytics API to track Junie usage. You'll need:
-
-- A JetBrains IDE Services automation token
-- Access to your organization's IDE Services instance
-- The server URL (typically https://ide-services.jetbrains.com for cloud, or your self-hosted URL)
-
-**API Endpoints Used:**
-
-- `GET /api/analytics/ai/effectiveness/metrics` - Retrieves aggregated AI metrics including invocations, suggestions, and acceptances
-
-**Authentication:**
-
-- Bearer token authentication using automation tokens
-- Create tokens in IDE Services: Configuration → Automation Tokens
-
-**Note**: This API is designed for JetBrains IDE Services enterprise users. Personal JetBrains AI accounts can track usage through the IDE widget but don't have direct API access.
-
-**Learn More:**
-
-- [JetBrains IDE Services Documentation](https://www.jetbrains.com/help/ide-services/)
-- [AI Analytics API Guide](https://www.jetbrains.com/help/ide-services/ai-analytics-api.html)
-- [JetBrains AI Assistant](https://www.jetbrains.com/ai/)
-
-### GitHub Copilot Metrics API
-
-The extension uses the GitHub Copilot Metrics API to track seat usage and code acceptance rates. You'll need:
-
-- A GitHub Personal Access Token (PAT) with appropriate scopes
-- Access to your organization's Copilot metrics
-- Your GitHub organization name
-
-**API Endpoints Used:**
-
-- `GET /orgs/{org}/copilot/metrics` - Retrieves aggregated Copilot usage metrics including active users, code suggestions, and acceptance rates
-
-**Authentication:**
-
-- Bearer token authentication using Personal Access Token (PAT)
-- Required scopes: `manage_billing:copilot`, `read:org`, or `read:enterprise`
-- Create tokens at: GitHub Settings → Developer settings → Personal access tokens
-
-**Metrics Tracked:**
-
-- Total active users (licensed seats)
-- Total engaged users (users actively using Copilot)
-- Code completions (suggestions and acceptances)
-- Acceptance rate percentage
-- Breakdown by language, editor, and model
-
-**Important Notes:**
-
-- The Copilot Metrics API access policy must be enabled for your organization
-- Only organization owners and billing managers can view Copilot metrics
-- Metrics are processed daily for the previous day (up to 100 days of history)
-- Endpoint only returns results if organization has 5+ members with active Copilot licenses
-
-**Learn More:**
-
-- [GitHub Copilot Metrics API Documentation](https://docs.github.com/en/rest/copilot/copilot-metrics)
-- [Copilot Usage Metrics Guide](https://docs.github.com/en/copilot/concepts/copilot-metrics)
-- [Interpreting Copilot Metrics](https://docs.github.com/en/copilot/reference/copilot-usage-metrics/interpret-copilot-metrics)
-
-### Google Gemini API
-
-The extension uses the Google Gemini API to check rate limits and quota tiers. You'll need:
-
-- A Google AI Studio API key
-- Access to the Gemini API
-
-**API Endpoints Used:**
-
-- `GET /v1beta/models` - Lightweight endpoint to check API access and rate limits
-
-**Authentication:**
-
-- API key authentication (add key as query parameter)
-- Create keys at: [Google AI Studio](https://aistudio.google.com/app/apikey)
-
-**Metrics Tracked:**
-
-- Requests per minute (RPM) usage from rate limit headers
-- Quota tier detection (Free, Paid)
-- Primary model information (gemini-1.5-pro, gemini-1.5-flash, etc.)
-
-**Rate Limits:**
-
-- **Free Tier**: 5-15 RPM depending on model, 1,500 RPD (requests per day)
-- **Paid Tier**: Higher limits based on subscription
-- Rate limits are per project, not per API key
-- RPD quotas reset at midnight Pacific time
-
-**Important Notes:**
-
-- Google doesn't provide a direct usage tracking API endpoint
-- Full usage tracking requires Google Cloud Monitoring API with service accounts
-- This implementation checks rate limit headers for real-time quota information
-- View detailed usage in Google AI Studio under "Usage and Billing"
-
-**Learn More:**
-
-- [Gemini API Rate Limits](https://ai.google.dev/gemini-api/docs/rate-limits)
-- [Using Gemini API Keys](https://ai.google.dev/gemini-api/docs/api-key)
-- [Google AI Studio](https://aistudio.google.com/)
+- 📊 Live 5-hour and 7-day rate-limit windows for your Claude subscription
+- 🎨 Color-coded utilization (green → yellow → orange → red)
+- ⏱️ "Resets in…" countdown per window
+- 🔐 No API keys to configure — reads the OAuth token Claude Code already stores
+- ⚡ Fetches on open and on ⌘R; no background polling
+
+## How it works
+
+The extension reads your existing Claude Code OAuth token and calls
+`GET https://api.anthropic.com/api/oauth/usage`, which returns the
+authoritative server-side window state for your subscription.
+
+**Token source (macOS):** the login Keychain entry `Claude Code-credentials`
+(written by Claude Code). The first read triggers a one-time macOS
+"Always Allow" prompt. On Linux/Windows it falls back to
+`~/.claude/.credentials.json`.
+
+Tokens are read fresh on each open and used directly — the extension does not
+refresh them. If your session has expired, run `claude` once to refresh it,
+then reopen the command.
+
+> **Note:** This is an unofficial, undocumented Anthropic endpoint. It may
+> change without notice.
+
+## Supported agents
+
+| Agent      | Status           | Source                                                |
+| ---------- | ---------------- | ----------------------------------------------------- |
+| Claude     | ✅ Available     | `api.anthropic.com/api/oauth/usage` (OAuth)           |
+| Codex      | 🚧 Planned       | ChatGPT backend usage endpoint (`~/.codex/auth.json`) |
+| Raycast Ai | 🔭 Investigating | No known public usage API yet                         |
 
 ## Development
 
-### Project Structure
+### Prerequisites
 
-```
-silver-funicular/
-├── assets/           # Icons and logos
-├── src/
-│   ├── clients/      # API clients for each agent
-│   │   ├── claude.ts
-│   │   ├── jetbrains.ts
-│   │   ├── copilot.ts
-│   │   └── google-gemini.ts
-│   ├── types.ts      # TypeScript type definitions
-│   └── view-usage.tsx # Main UI component
-├── package.json
-└── tsconfig.json
+- [Raycast](https://www.raycast.com/) (macOS)
+- [Node.js](https://nodejs.org/) 18+
+- An active Claude Code session (`claude`)
+
+### Run locally
+
+```bash
+npm install
+npm run dev      # ray develop — imports the command into Raycast with hot reload
 ```
 
-### Adding New Agents
+Then open **View Agent Usage** in Raycast.
 
-To add support for a new agent:
+### Project structure
 
-1. Create a new client in `src/clients/`:
-
-```typescript
-// src/clients/your-agent.ts
-import { AgentUsage } from "../types";
-
-export async function getYourAgentUsage(): Promise<AgentUsage> {
-  // Fetch usage data from your agent's API
-  return {
-    name: "Your Agent",
-    model: "model-name",
-    usagePercentage: 50,
-    currentUsage: 500000,
-    limit: 1000000,
-    logoPath: "your-agent-logo.png",
-  };
-}
+```
+src/
+├── auth/
+│   └── claude.ts        # read the Claude Code OAuth token (Keychain / file)
+├── clients/
+│   └── claude.ts        # call the OAuth usage endpoint, normalise windows
+├── types.ts             # AgentUsage / UsageWindow shapes
+└── view-usage.tsx       # the Raycast list UI
 ```
 
-2. Add the API key preference in `package.json`:
+### Scripts
 
-```json
-{
-  "name": "yourAgentApiKey",
-  "type": "password",
-  "required": false,
-  "title": "Your Agent API Key",
-  "description": "API key for Your Agent",
-  "placeholder": "ya-..."
-}
-```
-
-3. Update `view-usage.tsx` to fetch from your new client:
-
-```typescript
-if (preferences.yourAgentApiKey) {
-  const usage = await getYourAgentUsage();
-  results.push(usage);
-}
-```
-
-4. Add the logo to `assets/your-agent-logo.png`
-
-## Scripts
-
-- `npm run dev` - Start development mode with hot reload
-- `npm run build` - Build the extension for production
-- `npm run lint` - Run ESLint
-- `npm run fix-lint` - Fix ESLint issues automatically
-- `npm run publish` - Publish to Raycast store (requires approval)
-
-## Troubleshooting
-
-### "API key not configured" error
-
-- Ensure you've added your API key in Raycast preferences
-- Check that the key is valid and hasn't expired
-
-### "Usage data not available" error
-
-- Verify your API key has organization-level permissions
-- Some API keys may not have access to usage statistics
-- Check the Anthropic console for your account type
-
-### Extension not appearing in Raycast
-
-- Ensure you've run `npm run dev`
-- Try restarting Raycast
-- Check the Raycast console for errors (⌘⇧,)
-
-## Privacy & Security
-
-- API keys are stored securely in Raycast's encrypted preferences
-- No data is sent to third parties
-- All API calls are made directly from your machine to the agent providers
-
-## Contributing
-
-Contributions are welcome! To contribute:
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+- `npm run dev` — development mode with hot reload
+- `npm run build` — production build
+- `npm run lint` / `npm run fix-lint` — lint (and auto-fix)
 
 ## License
 
-MIT License - see LICENSE file for details
-
-## Support
-
-For issues, questions, or suggestions:
-
-- Open an issue on GitHub
-- Check existing issues for similar problems
-
-## Roadmap
-
-- [ ] Add OpenAI GPT support
-- [ ] Add Google Gemini support
-- [ ] Add usage history charts
-- [ ] Add usage alerts/notifications
-- [ ] Export usage data to CSV
-- [ ] Add cost estimates based on usage
-
-## Acknowledgments
-
-- Built with [Raycast API](https://developers.raycast.com/)
-- Icons created for demonstration purposes
-- Inspired by the need to track multiple AI agent subscriptions
+Mozilla Public License 2.0 — see [LICENSE](./LICENSE).
